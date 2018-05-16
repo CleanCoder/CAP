@@ -35,7 +35,7 @@ namespace DotNetCore.CAP.Abstractions
         protected bool IsUsingEF { get; set; }
         protected IServiceProvider ServiceProvider { get; set; }
 
-        public void Publish<T>(string name, T contentObj, string callbackName = null)
+        public void Publish<T>(string name, T contentObj, string callbackName = null) where T : FlowContext
         {
             CheckIsUsingEF(name);
             PrepareConnectionForEF();
@@ -43,7 +43,7 @@ namespace DotNetCore.CAP.Abstractions
             PublishWithTrans(name, contentObj, callbackName);
         }
 
-        public Task PublishAsync<T>(string name, T contentObj, string callbackName = null)
+        public Task PublishAsync<T>(string name, T contentObj, string callbackName = null) where T : FlowContext
         {
             CheckIsUsingEF(name);
             PrepareConnectionForEF();
@@ -51,7 +51,7 @@ namespace DotNetCore.CAP.Abstractions
             return PublishWithTransAsync(name, contentObj, callbackName);
         }
 
-        public void Publish<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null)
+        public void Publish<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null) where T : FlowContext
         {
             CheckIsAdoNet(name);
             PrepareConnectionForAdo(dbTransaction);
@@ -59,7 +59,7 @@ namespace DotNetCore.CAP.Abstractions
             PublishWithTrans(name, contentObj, callbackName);
         }
 
-        public Task PublishAsync<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null)
+        public Task PublishAsync<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null) where T : FlowContext
         {
             CheckIsAdoNet(name);
             PrepareConnectionForAdo(dbTransaction);
@@ -74,11 +74,15 @@ namespace DotNetCore.CAP.Abstractions
 
         protected abstract void PrepareConnectionForEF();
 
-        protected abstract int Execute(IDbConnection dbConnection, IDbTransaction dbTransaction,
-            CapPublishedMessage message);
+        protected abstract int Execute(IDbConnection dbConnection, IDbTransaction dbTransaction, CapPublishedMessage message);
 
-        protected abstract Task<int> ExecuteAsync(IDbConnection dbConnection, IDbTransaction dbTransaction,
-            CapPublishedMessage message);
+        protected abstract Task<int> ExecuteAsync(IDbConnection dbConnection, IDbTransaction dbTransaction, CapPublishedMessage message);
+
+        protected virtual Task<string> QueryRollbackEventName(IDbConnection dbConnection, IDbTransaction dbTransaction, string correlationId, int step)
+        {
+            // TODO: use abstract
+            return Task.FromResult(string.Empty);
+        }
 
         protected virtual string Serialize<T>(T obj, string callbackName = null)
         {
@@ -189,17 +193,30 @@ namespace DotNetCore.CAP.Abstractions
             }
         }
 
-        private void PublishWithTrans<T>(string name, T contentObj, string callbackName = null)
+        private void PublishWithTrans<T>(string name, T contentObj, string callbackName = null) where T : FlowContext
         {
             Guid operationId = default(Guid);
 
             var content = Serialize(contentObj, callbackName);
+            var eventName = name;
+            if (contentObj.Direction == FlowDirection.Negative)
+            {
+                eventName = QueryRollbackEventName(DbConnection, DbTransaction, contentObj.CorrelationId, contentObj.Step).GetAwaiter().GetResult();
+                if (string.IsNullOrEmpty(eventName) && contentObj.Step > 1)
+                {
+                    throw new Exception();
+                }
+                eventName += ".Rollback";
+            }
+
 
             var message = new CapPublishedMessage
             {
-                Name = name,
+                Name = eventName,
                 Content = content,
-                StatusName = StatusName.Scheduled
+                StatusName = StatusName.Scheduled,
+                CorrelationId = contentObj.CorrelationId,
+                Step = contentObj.Step
             };
 
             try

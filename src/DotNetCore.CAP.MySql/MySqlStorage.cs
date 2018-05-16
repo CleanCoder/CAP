@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS `{prefix}.received` (
   `Id` int(127) NOT NULL AUTO_INCREMENT,
   `Name` varchar(400) NOT NULL,
   `Group` varchar(200) DEFAULT NULL,
+  `CorrelationId` varchar(40) NOT NULL,
+  `Step` int(11) DEFAULT NULL,
   `Content` longtext,
   `Retries` int(11) DEFAULT NULL,
   `Added` datetime NOT NULL,
@@ -75,6 +77,8 @@ CREATE TABLE IF NOT EXISTS `{prefix}.received` (
 CREATE TABLE IF NOT EXISTS `{prefix}.published` (
   `Id` int(127) NOT NULL AUTO_INCREMENT,
   `Name` varchar(200) NOT NULL,
+  `CorrelationId` varchar(40) NOT NULL,
+  `Step` int(11) DEFAULT NULL,
   `Content` longtext,
   `Retries` int(11) DEFAULT NULL,
   `Added` datetime NOT NULL,

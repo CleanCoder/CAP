@@ -23,6 +23,10 @@ namespace DotNetCore.CAP
         /// </summary>
         public string Content { get; set; }
 
+        public string CorrelationId { get; set; }
+
+        public int Step { get; set; }
+
         public override string ToString()
         {
             return $"Group:{Group}, Name:{Name}, Content:{Content}";

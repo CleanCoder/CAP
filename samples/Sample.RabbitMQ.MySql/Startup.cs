@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using DotNetCore.CAP;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,11 @@ namespace Sample.RabbitMQ.MySql
             });
 
             services.AddMvc();
+
+            services.AddScoped<ICapSubscribe, Services.AService>();
+            services.AddScoped<ICapSubscribe, Services.BService>();
+            services.AddScoped<ICapSubscribe, Services.CService>();
+            services.AddScoped<ICapSubscribe, Services.DService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

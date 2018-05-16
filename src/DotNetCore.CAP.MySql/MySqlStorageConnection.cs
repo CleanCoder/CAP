@@ -60,8 +60,8 @@ namespace DotNetCore.CAP.MySql
             }
 
             var sql = $@"
-INSERT INTO `{_prefix}.received`(`Name`,`Group`,`Content`,`Retries`,`Added`,`ExpiresAt`,`StatusName`)
-VALUES(@Name,@Group,@Content,@Retries,@Added,@ExpiresAt,@StatusName);SELECT LAST_INSERT_ID();";
+INSERT INTO `{_prefix}.received`(`Name`,`Group`, `CorrelationId`, `Step`, `Content`,`Retries`,`Added`,`ExpiresAt`,`StatusName`)
+VALUES(@Name,@Group,@CorrelationId,@Step,@Content,@Retries,@Added,@ExpiresAt,@StatusName);SELECT LAST_INSERT_ID();";
 
             using (var connection = new MySqlConnection(Options.ConnectionString))
             {

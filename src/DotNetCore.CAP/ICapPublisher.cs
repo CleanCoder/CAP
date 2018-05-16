@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Core Community. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
+using DotNetCore.CAP.Models;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace DotNetCore.CAP
         /// <param name="name">the topic name or exchange router key.</param>
         /// <param name="contentObj">message body content, that will be serialized of json.</param>
         /// <param name="callbackName">callback subscriber name</param>
-        Task PublishAsync<T>(string name, T contentObj, string callbackName = null);
+        Task PublishAsync<T>(string name, T contentObj, string callbackName = null) where T : FlowContext;
 
         /// <summary>
         /// (EntityFramework) Publish a object message.
@@ -35,7 +36,7 @@ namespace DotNetCore.CAP
         /// <param name="name">the topic name or exchange router key.</param>
         /// <param name="contentObj">message body content, that will be serialized of json.</param>
         /// <param name="callbackName">callback subscriber name</param>
-        void Publish<T>(string name, T contentObj, string callbackName = null);
+        void Publish<T>(string name, T contentObj, string callbackName = null) where T : FlowContext;
 
         /// <summary>
         /// (ado.net) Asynchronous publish a object message.
@@ -44,7 +45,7 @@ namespace DotNetCore.CAP
         /// <param name="contentObj">message body content, that will be serialized of json.</param>
         /// <param name="dbTransaction">the transaction of <see cref="IDbTransaction" /></param>
         /// <param name="callbackName">callback subscriber name</param>
-        Task PublishAsync<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null);
+        Task PublishAsync<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null) where T : FlowContext; 
 
         /// <summary>
         /// (ado.net) Publish a object message.
@@ -53,6 +54,6 @@ namespace DotNetCore.CAP
         /// <param name="contentObj">message body content, that will be serialized of json.</param>
         /// <param name="dbTransaction">the transaction of <see cref="IDbTransaction" /></param>
         /// <param name="callbackName">callback subscriber name</param>
-        void Publish<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null);
+        void Publish<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null) where T : FlowContext;
     }
 }

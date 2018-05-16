@@ -3,6 +3,7 @@
 
 using System;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using DotNetCore.CAP.Abstractions;
@@ -74,12 +75,19 @@ namespace DotNetCore.CAP.MySql
             return await dbConnection.ExecuteScalarAsync<int>(PrepareSql(), message, dbTransaction);
         }
 
+        protected async override Task<string> QueryRollbackEventName(IDbConnection dbConnection, IDbTransaction dbTransaction, string correlationId, int step)
+        {
+            string sql = $"Select Name from `{_options.TableNamePrefix}.received` where `CorrelationId` = @CorrelationId and `Step` = @Step";
+
+            return (await dbConnection.QueryAsync<string>(sql, new { CorrelationId = correlationId, Step = step }, dbTransaction)).FirstOrDefault();
+        }
+
         #region private methods
 
         private string PrepareSql()
         {
             return
-                $"INSERT INTO `{_options.TableNamePrefix}.published` (`Name`,`Content`,`Retries`,`Added`,`ExpiresAt`,`StatusName`)VALUES(@Name,@Content,@Retries,@Added,@ExpiresAt,@StatusName);SELECT LAST_INSERT_ID()";
+                $"INSERT INTO `{_options.TableNamePrefix}.published` (`Name`,`CorrelationId`, `Step`, `Content`,`Retries`,`Added`,`ExpiresAt`,`StatusName`)VALUES(@Name,@CorrelationId,@Step,@Content,@Retries,@Added,@ExpiresAt,@StatusName);SELECT LAST_INSERT_ID()";
         }
 
         #endregion private methods

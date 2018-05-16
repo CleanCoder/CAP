@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -141,11 +142,21 @@ namespace DotNetCore.CAP.RabbitMQ
         private void OnConsumerReceived(object sender, BasicDeliverEventArgs e)
         {
             _deliveryTag = e.DeliveryTag;
+
+            var rawContent = Encoding.UTF8.GetString(e.Body);
+            JObject jObject = JObject.Parse(rawContent);
+            var contentObject = (string)jObject.SelectToken("Content");
+            jObject = JObject.Parse(contentObject);
+            var correlationId = (string)jObject.SelectToken("CorrelationId");
+            int step = (int)jObject.SelectToken("Step");
+
             var message = new MessageContext
             {
                 Group = _queueName,
                 Name = e.RoutingKey,
-                Content = Encoding.UTF8.GetString(e.Body)
+                CorrelationId = correlationId,
+                Step = step,
+                Content = rawContent
             };
             OnMessageReceived?.Invoke(sender, message);
         }

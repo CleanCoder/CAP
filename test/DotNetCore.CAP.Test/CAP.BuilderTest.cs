@@ -119,12 +119,12 @@ namespace DotNetCore.CAP.Test
 
         private class MyProducerService : ICapPublisher
         {
-            public void Publish<T>(string name, T contentObj, string callbackName = null)
+            public void Publish<T>(string name, T contentObj, string callbackName = null) where T : FlowContext
             {
                 throw new NotImplementedException();
             }
 
-            public void Publish<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null)
+            public void Publish<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null) where T : FlowContext
             {
                 throw new NotImplementedException();
             }
@@ -149,17 +149,17 @@ namespace DotNetCore.CAP.Test
                 throw new NotImplementedException();
             }
 
-            public Task PublishAsync<T>(string name, T contentObj, IDbConnection dbConnection, IDbTransaction dbTransaction = null)
+            public Task PublishAsync<T>(string name, T contentObj, IDbConnection dbConnection, IDbTransaction dbTransaction = null) where T : FlowContext
             {
                 throw new NotImplementedException();
             }
 
-            public Task PublishAsync<T>(string name, T contentObj, string callbackName = null)
+            public Task PublishAsync<T>(string name, T contentObj, string callbackName = null) where T : FlowContext
             {
                 throw new NotImplementedException();
             }
 
-            public Task PublishAsync<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null)
+            public Task PublishAsync<T>(string name, T contentObj, IDbTransaction dbTransaction, string callbackName = null) where T: FlowContext
             {
                 throw new NotImplementedException();
             }

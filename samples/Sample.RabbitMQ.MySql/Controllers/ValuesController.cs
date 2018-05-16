@@ -20,37 +20,29 @@ namespace Sample.RabbitMQ.MySql.Controllers
         [Route("~/publish")]
         public IActionResult PublishMessage()
         {
-            _capBus.Publish("sample.rabbitmq.mysql", DateTime.Now);
+            _capBus.Publish("A", FlowContext<DateTime>.Start(DateTime.Now));
 
-            return Ok();
+            return Ok(DateTime.Now);
         }
-
 
         [Route("~/publish2")]
         public IActionResult PublishMessage2()
         {
-            _capBus.Publish("sample.kafka.sqlserver4", DateTime.Now);
+            _capBus.Publish("D", FlowContext<DateTime>.Start(DateTime.Now));
 
-            return Ok();
+            return Ok(DateTime.Now);
         }
 
-        [Route("~/publishWithTrans")]
-        public async Task<IActionResult> PublishMessageWithTransaction()
+        [CapSubscribe("A.Rollback")]
+        public void Rollback(FlowContext<DateTime> time)
         {
-            using (var trans = await _dbContext.Database.BeginTransactionAsync())
-            {
-                await _capBus.PublishAsync("sample.kafka.sqlserver", "");
-
-                trans.Commit();
-            }
-            return Ok();
+           System.Diagnostics.Debug.WriteLine("---- [A] rollback message received: " + DateTime.Now + ",sent time: " + time.Content);
         }
 
-        [NonAction]
-        [CapSubscribe("sample.rabbitmq.mysql")]
-        public void ReceiveMessage(DateTime time)
+        [CapSubscribe("D.Rollback")]
+        public void RollbackD(FlowContext<DateTime> time)
         {
-            Console.WriteLine("[sample.rabbitmq.mysql] message received: " + DateTime.Now + ",sent time: " + time);
+            System.Diagnostics.Debug.WriteLine("---- [D] rollback message received: " + DateTime.Now + ",sent time: " + time.Content);
         }
     }
 }

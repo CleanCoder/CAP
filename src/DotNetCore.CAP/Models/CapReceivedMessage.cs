@@ -20,6 +20,8 @@ namespace DotNetCore.CAP.Models
             Group = message.Group;
             Name = message.Name;
             Content = message.Content;
+            Step = message.Step;
+            CorrelationId = message.CorrelationId;
         }
 
         public int Id { get; set; }
@@ -38,13 +40,19 @@ namespace DotNetCore.CAP.Models
 
         public string StatusName { get; set; }
 
+        public string CorrelationId { get; set; }
+
+        public int Step { get; set; }
+
         public MessageContext ToMessageContext()
         {
             return new MessageContext
             {
                 Group = Group,
                 Name = Name,
-                Content = Content
+                Content = Content,
+                CorrelationId = CorrelationId,
+                Step = Step
             };
         }
 
