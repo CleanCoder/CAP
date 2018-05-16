@@ -16,19 +16,19 @@ namespace Sample.RabbitMQ.MySql.Services
         }
 
         [CapSubscribe("D")]
-        public void ReceiveMessage(FlowContext<DateTime> time)
+        public void ReceiveMessage(FlowContext<IEnumerable<string>> flowContext)
         {
-            System.Diagnostics.Debug.WriteLine("----- [A] message received: " + DateTime.Now + ",sent time: " + time.Content);
+            System.Diagnostics.Debug.WriteLine("----- [A] message received: " + DateTime.Now);
 
-            _capBus.Publish("B", time.ToNextStep(DateTime.Now));
+            _capBus.Publish("B", flowContext.ToNextStep(flowContext.Content.Append("B")));
         }
 
         [CapSubscribe("B.Rollback")]
-        public void Rollback(FlowContext<DateTime> time)
+        public void Rollback(FlowContext<IEnumerable<string>> flowContext)
         {
-            System.Diagnostics.Debug.WriteLine("---- [B] rollback message received: " + DateTime.Now + ",sent time: " + time.Content);
+            System.Diagnostics.Debug.WriteLine("---- [B] rollback message received: " + DateTime.Now);
 
-            _capBus.Publish(string.Empty, time.RollbackStep(DateTime.Now));
+            _capBus.Publish(string.Empty, flowContext.RollbackStep(flowContext.Content.Append("B.Rollback")));
         }
     }
 }

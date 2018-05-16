@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DotNetCore.CAP;
 using Microsoft.AspNetCore.Mvc;
@@ -20,29 +22,31 @@ namespace Sample.RabbitMQ.MySql.Controllers
         [Route("~/publish")]
         public IActionResult PublishMessage()
         {
-            _capBus.Publish("A", FlowContext<DateTime>.Start(DateTime.Now));
-
-            return Ok(DateTime.Now);
-        }
-
-        [Route("~/publish2")]
-        public IActionResult PublishMessage2()
-        {
-            _capBus.Publish("D", FlowContext<DateTime>.Start(DateTime.Now));
+            _capBus.Publish("A", FlowContext<List<string>>.Start(new List<string>() { "A" }));
 
             return Ok(DateTime.Now);
         }
 
         [CapSubscribe("A.Rollback")]
-        public void Rollback(FlowContext<DateTime> time)
+        public void Rollback(FlowContext<IEnumerable<string>> flowContext)
         {
-           System.Diagnostics.Debug.WriteLine("---- [A] rollback message received: " + DateTime.Now + ",sent time: " + time.Content);
+            var workflow = flowContext.Content.Append("A.Rollback");
+            System.Diagnostics.Debug.WriteLine("###########################   Finish: " + string.Join(" -> ", workflow));
+        }
+
+        [Route("~/publish2")]
+        public IActionResult PublishMessage2()
+        {
+            _capBus.Publish("D", FlowContext<List<string>>.Start(new List<string>() { "D" }));
+
+            return Ok(DateTime.Now);
         }
 
         [CapSubscribe("D.Rollback")]
-        public void RollbackD(FlowContext<DateTime> time)
+        public void RollbackD(FlowContext<IEnumerable<string>> flowContext)
         {
-            System.Diagnostics.Debug.WriteLine("---- [D] rollback message received: " + DateTime.Now + ",sent time: " + time.Content);
+            var workflow = flowContext.Content.Append("D.Rollback");
+            System.Diagnostics.Debug.WriteLine("###################### Finish: " + string.Join(" -> ", workflow));
         }
     }
 }
