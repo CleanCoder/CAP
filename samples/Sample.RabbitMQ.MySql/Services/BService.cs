@@ -48,9 +48,15 @@ namespace Sample.RabbitMQ.MySql.Services
 
             var value = _random.Next(0, 2);
             if (value < 1)
+            {
+                flowContext.AppendInfo("Completed in B1");
                 _capBus.Publish(string.Empty, flowContext.MarkComplete<string, IEnumerable<string>>(nextMessage.Split(" -> ")));
+            }
             else
+            {
+                flowContext.AppendInfo("Rollback in B1");
                 _capBus.Publish(string.Empty, flowContext.RollBack<string, IEnumerable<string>>(nextMessage + " -> B1.Rollback", "Just for test"));
+            }
         }
     }
 }

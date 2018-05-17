@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,15 +14,20 @@ namespace DotNetCore.CAP
 
     public abstract class FlowContext
     {
-        public List<string> _traceInfo = new List<string>();
+        [JsonProperty]
+        internal List<string> _traceInfo = new List<string>();
 
-        public string CorrelationId { get; set; }
+        [JsonProperty]
+        public string CorrelationId { get; internal set; }
 
-        public int Step { get; set; } = 1;
+        [JsonProperty]
+        public int Step { get; internal set; } = 1;
 
-        public FlowDirection Direction { get; set; } = FlowDirection.Forward;
+        [JsonProperty]
+        public FlowDirection Direction { get; internal set; } = FlowDirection.Forward;
 
-        public AsyncTaskResult Result { get; set; } = AsyncTaskResult.InProgess;
+        [JsonProperty]
+        public AsyncTaskResult Result { get; internal set; } = AsyncTaskResult.InProgess;
 
         public IReadOnlyList<string> Infos { get { return _traceInfo.AsReadOnly(); } }
 
@@ -33,7 +39,8 @@ namespace DotNetCore.CAP
 
     public class FlowContext<TMessage> : FlowContext
     {
-        public TMessage Messge { get; set; }
+        [JsonProperty]
+        public TMessage Messge { get; internal set; }
 
         public static FlowContext<TMessage> Start(TMessage message)
         {
@@ -43,13 +50,16 @@ namespace DotNetCore.CAP
             instance.Step = 1;
             instance.Messge = message;
 
+            instance.AppendInfo("Start Workflow");
+
             return instance;
         }
     }
 
     public class FlowContext<TMessage, TResult> : FlowContext<TMessage>
     {
-        public new AsyncTaskResult<TResult> Result { get; set; }
+        [JsonProperty]
+        public new AsyncTaskResult<TResult> Result { get; internal set; }
 
         public bool IsSucessed => Result.Status == AsyncTaskStatus.Success;
     }
