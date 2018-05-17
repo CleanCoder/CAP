@@ -22,16 +22,22 @@ namespace Sample.RabbitMQ.MySql.Controllers
         [Route("~/publish")]
         public IActionResult PublishMessage()
         {
-            _capBus.Publish("A", FlowContext<List<string>>.Start(new List<string>() { "A" }));
+            _capBus.Publish("A", FlowContext<string>.Start("Client"));
 
             return Ok(DateTime.Now);
         }
 
-        [CapSubscribe("A.Rollback")]
-        public void Rollback(FlowContext<IEnumerable<string>> flowContext)
+        [CapSubscribe("A.Completed")]
+        public void ACompleted(FlowContext<string, IEnumerable<string>> flowContext)
         {
-            var workflow = flowContext.Content.Append("A.Rollback");
-            System.Diagnostics.Debug.WriteLine("###########################   Finish: " + string.Join(" -> ", workflow));
+            if (flowContext.Result.Succeeded)
+            {
+                System.Diagnostics.Debug.WriteLine("###########################   Finish: " + string.Join(" -> ", flowContext.Result.Data.Append("A.Complete")));
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("###########################   Rollback: " + flowContext.Messge);
+            }
         }
 
         [Route("~/publish2")]
@@ -42,10 +48,10 @@ namespace Sample.RabbitMQ.MySql.Controllers
             return Ok(DateTime.Now);
         }
 
-        [CapSubscribe("D.Rollback")]
-        public void RollbackD(FlowContext<IEnumerable<string>> flowContext)
+        [CapSubscribe("D.Completed")]
+        public void RollbackD(FlowContext<string, IEnumerable<string>> flowContext)
         {
-            var workflow = flowContext.Content.Append("D.Rollback");
+            var workflow = flowContext.Result.Data.Append("D.Rollback");
             System.Diagnostics.Debug.WriteLine("###################### Finish: " + string.Join(" -> ", workflow));
         }
     }

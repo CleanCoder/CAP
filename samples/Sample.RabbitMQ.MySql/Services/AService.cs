@@ -16,19 +16,27 @@ namespace Sample.RabbitMQ.MySql.Services
         }
 
         [CapSubscribe("A")]
-        public void ReceiveMessage(FlowContext<IEnumerable<string>> flowContext)
+        public void ReceiveMessage(FlowContext<string> flowContext)
         {
             System.Diagnostics.Debug.WriteLine("----- [A] message received: " + DateTime.Now);
-           
-            _capBus.Publish("B", flowContext.ToNextStep(flowContext.Content.Append("B")));
+
+            var nextMessage = string.Join(" -> ", flowContext.Messge, "A");
+            _capBus.Publish("B", flowContext.Forward(nextMessage));
         }
 
-        [CapSubscribe("B.Rollback")]
-        public void Rollback(FlowContext<IEnumerable<string>> flowContext)
+        [CapSubscribe("B.Completed")]
+        public void Rollback(FlowContext<string, IEnumerable<string>> flowContext)
         {
-            System.Diagnostics.Debug.WriteLine("---- [B] rollback message received: " + DateTime.Now + ",sent time: " + flowContext.Content);
+            System.Diagnostics.Debug.WriteLine("---- [B.Completed] message received: " + DateTime.Now + ",sent time: " + flowContext.Messge);
 
-            _capBus.Publish(string.Empty, flowContext.RollbackStep(flowContext.Content.Append("B.Rollback")));
+            if (flowContext.Result.Succeeded)
+            {
+                _capBus.Publish(string.Empty, flowContext.MarkComplete<string, IEnumerable<string>>(flowContext.Result.Data.Append("B.Complete")));
+            }
+            else
+            {
+                _capBus.Publish(string.Empty, flowContext.RollBack<string, IEnumerable<string>>(flowContext.Messge + " -> A.Rollback", string.Empty));
+            }
         }
     }
 }

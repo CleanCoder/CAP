@@ -199,14 +199,14 @@ namespace DotNetCore.CAP.Abstractions
 
             var content = Serialize(contentObj, callbackName);
             var eventName = name;
-            if (contentObj.Direction == FlowDirection.Negative)
+            if (contentObj.Direction == FlowDirection.Backward)
             {
                 eventName = QueryRollbackEventName(DbConnection, DbTransaction, contentObj.CorrelationId, contentObj.Step).GetAwaiter().GetResult();
                 if (string.IsNullOrEmpty(eventName) && contentObj.Step > 1)
                 {
                     throw new Exception();
                 }
-                eventName += ".Rollback";
+                eventName += ".Completed";
             }
 
 

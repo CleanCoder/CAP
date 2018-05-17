@@ -30,7 +30,7 @@ namespace DotNetCore.CAP.Internal
 
                 return Task.FromResult(ModelBindingResult.Success(value));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return Task.FromResult(ModelBindingResult.Failed());
             }
