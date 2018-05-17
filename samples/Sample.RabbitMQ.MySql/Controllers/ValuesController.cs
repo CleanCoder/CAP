@@ -30,7 +30,9 @@ namespace Sample.RabbitMQ.MySql.Controllers
         [CapSubscribe("A.Completed")]
         public void ACompleted(FlowContext<string, IEnumerable<string>> flowContext)
         {
-            if (flowContext.Result.Succeeded)
+            System.Diagnostics.Debug.WriteLine("###########################   TraceInfo: " + string.Join(" -> ", flowContext.Infos));
+
+            if (flowContext.IsSucessed)
             {
                 System.Diagnostics.Debug.WriteLine("###########################   Finish: " + string.Join(" -> ", flowContext.Result.Data.Append("A.Complete")));
             }

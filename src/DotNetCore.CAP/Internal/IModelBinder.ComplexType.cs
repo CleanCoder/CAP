@@ -32,6 +32,7 @@ namespace DotNetCore.CAP.Internal
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
                 return Task.FromResult(ModelBindingResult.Failed());
             }
         }

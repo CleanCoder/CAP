@@ -20,6 +20,8 @@ namespace Sample.RabbitMQ.MySql.Services
         {
             System.Diagnostics.Debug.WriteLine("----- [A] message received: " + DateTime.Now);
 
+            flowContext.AppendInfo("A Handler");
+
             var nextMessage = string.Join(" -> ", flowContext.Messge, "A");
             _capBus.Publish("B", flowContext.Forward(nextMessage));
         }
@@ -29,13 +31,13 @@ namespace Sample.RabbitMQ.MySql.Services
         {
             System.Diagnostics.Debug.WriteLine("---- [B.Completed] message received: " + DateTime.Now + ",sent time: " + flowContext.Messge);
 
-            if (flowContext.Result.Succeeded)
+            if (flowContext.IsSucessed)
             {
                 _capBus.Publish(string.Empty, flowContext.MarkComplete<string, IEnumerable<string>>(flowContext.Result.Data.Append("B.Complete")));
             }
             else
             {
-                _capBus.Publish(string.Empty, flowContext.RollBack<string, IEnumerable<string>>(flowContext.Messge + " -> A.Rollback", string.Empty));
+                _capBus.Publish(string.Empty, flowContext.RollBack<string, IEnumerable<string>>(flowContext.Messge + " -> A.Rollback"));
             }
         }
     }
